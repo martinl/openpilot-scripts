@@ -15,14 +15,14 @@ log_paths = route.log_paths()
 signals = [
   (  0,  64, "Throttle", "Engine_RPM"),
   (  0,  64, "Throttle", "Throttle_Cruise"),
-  (  0,  73, "CVT", "CVT_Gear"),
+  (  0,  72, "Transmission", "RPM"),
   (  0, 576, "CruiseControl", "Cruise_Activated"),
   (128, 544, "ES_Brake", "Brake_Pressure"),
   (128, 545, "ES_Distance", "Cruise_Throttle"),
   (128, 546, "ES_Status", "Cruise_RPM"),
 ]
 
-keys = ['Engine_RPM', 'Throttle_Cruise', 'Cruise_Activated', 'Cruise_Throttle', 'Cruise_RPM', 'Brake_Pressure', 'v_ego', 'a_ego', 'v_cruise', 'computer_gas', 'computer_brake', 'a_target', 'v_target']
+keys = ['Engine_RPM', 'Throttle_Cruise', 'RPM', 'Cruise_Activated', 'Cruise_Throttle', 'Cruise_RPM', 'Brake_Pressure', 'v_ego', 'a_ego', 'v_cruise', 'computer_gas', 'computer_brake', 'a_target', 'v_target']
 
 dbc = cantools.database.load_file(dbc_file)
 table = defaultdict(dict)
@@ -52,32 +52,32 @@ for log_path in log_paths:
             can_sig = can_msg[msg].decode(rec.dat)[signal]
             table[log_msg.logMonoTime][signal] = can_msg[msg].decode(rec.dat)[signal]
             #print("%s: %s" % (signal, can_msg[msg].decode(rec.dat)[signal]))
-            print("%s %s %s %s %s:%s" % (log_msg.logMonoTime, msg_type, rec.src, rec.address, signal, can_sig))
+            #print("%s %s %s %s %s:%s" % (log_msg.logMonoTime, msg_type, rec.src, rec.address, signal, can_sig))
     elif msg_type == 'carState':
       table[log_msg.logMonoTime]['v_ego'] = log_msg.carState.vEgo
       table[log_msg.logMonoTime]['a_ego'] = log_msg.carState.aEgo
       table[log_msg.logMonoTime]['v_cruise'] = log_msg.carState.cruiseState.speed
-      print("%s %s %s %s %s" % (log_msg.logMonoTime, msg_type, log_msg.carState.vEgo, log_msg.carState.aEgo, log_msg.carState.cruiseState.speed))
+      #print("%s %s %s %s %s" % (log_msg.logMonoTime, msg_type, log_msg.carState.vEgo, log_msg.carState.aEgo, log_msg.carState.cruiseState.speed))
     elif msg_type == 'carControl':
       table[log_msg.logMonoTime]['computer_gas'] = log_msg.carControl.actuators.gas
       table[log_msg.logMonoTime]['computer_brake'] = log_msg.carControl.actuators.brake
-      print("%s %s %s %s" % (log_msg.logMonoTime, msg_type, log_msg.carControl.actuators.gas, log_msg.carControl.actuators.brake))
+      #print("%s %s %s %s" % (log_msg.logMonoTime, msg_type, log_msg.carControl.actuators.gas, log_msg.carControl.actuators.brake))
     elif msg_type == 'plan':
       table[log_msg.logMonoTime]['a_target'] = log_msg.plan.aTarget
       table[log_msg.logMonoTime]['v_target'] = log_msg.plan.vTarget
-      print("%s %s %s %s" % (log_msg.logMonoTime, msg_type, log_msg.plan.aTarget, log_msg.plan.vTarget))
+      #print("%s %s %s %s" % (log_msg.logMonoTime, msg_type, log_msg.plan.aTarget, log_msg.plan.vTarget))
 
-      if prev_logMonoTime != log_msg.logMonoTime and len(table) > 0 :
-        for time, items in table.items():
-          result = str(time)
-          for k in keys:
-            print(items[k])
-            try:
-              result += "," + str(items[k])
-            except KeyError:
-              result += ","
-          print(result)
-        table = defaultdict(dict)
+    if prev_logMonoTime != log_msg.logMonoTime and len(table) > 0 :
+      for time, items in table.items():
+        result = str(time)
+        for k in keys:
+          #print(items[k])
+          try:
+            result += "," + str(items[k])
+          except KeyError:
+            result += ","
+        print(result)
+      table = defaultdict(dict)
 
       prev_logMonoTime = log_msg.logMonoTime
 
